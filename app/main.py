@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 
 listOfCommands = ["exit", "echo", "type"]
@@ -13,21 +14,51 @@ def main():
         userCommand = input()
         
         command = userCommand.split(" ")[0]
+        
+        match (command):
+            case "exit":
+                handleExit(userCommand)
+            case "echo":
+                handleEcho(userCommand)
+            case "type":
+                handleType(userCommand)
+            case _:
+                runExecutable(userCommand)
 
-        if command not in listOfCommands:
-            sys.stdout.write(f"{userCommand}: command not found\n")
-            continue
 
-        if command == "exit":
-            handleExit(userCommand)
+        # if command not in listOfCommands:
+        #     sys.stdout.write(f"{userCommand}: command not found\n")
+        #     continue
 
-        elif command == "echo":
-            handleEcho(userCommand)
+        # if command == "exit":
+        #     handleExit(userCommand)
 
-        elif command == "type":
-            handleType(userCommand)
+        # elif command == "echo":
+        #     handleEcho(userCommand)
+
+        # elif command == "type":
+        #     handleType(userCommand)
 
         pass
+        
+def runExecutable(userCommand):
+    path_dirs = os.environ.get("PATH", "").split(os.pathsep)
+    parts = userCommand.strip().split()
+
+    if not parts:
+        return  # Ignore empty command
+
+    command = parts[0]
+    args = parts  # includes program name and arguments
+
+    for directory in path_dirs:
+        full_path = os.path.join(directory, command)
+        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+            subprocess.run([command] + args[1:])
+            return
+
+    sys.stdout.write(f"{command}: command not found\n")
+
 
 def handleType(userCommand):
     cmd = userCommand.split(" ")[1] if len(userCommand.split(" ")) > 1 else ""

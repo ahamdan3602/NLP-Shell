@@ -1,9 +1,10 @@
 import sys
 import os
 import subprocess
+import shlex
 
 
-listOfCommands = ["exit", "echo", "type"]
+listOfCommands = ["exit", "echo", "type", "pwd"]
 
 def main():
     # TODO: Uncomment the code below to pass the first stage
@@ -14,7 +15,7 @@ def main():
         userCommand = input()
         
         command = userCommand.split(" ")[0]
-        
+
         match (command):
             case "exit":
                 handleExit(userCommand)
@@ -22,25 +23,14 @@ def main():
                 handleEcho(userCommand)
             case "type":
                 handleType(userCommand)
+            case "pwd":
+                handlePWD(userCommand)
             case _:
                 runExecutable(userCommand)
-
-
-        # if command not in listOfCommands:
-        #     sys.stdout.write(f"{userCommand}: command not found\n")
-        #     continue
-
-        # if command == "exit":
-        #     handleExit(userCommand)
-
-        # elif command == "echo":
-        #     handleEcho(userCommand)
-
-        # elif command == "type":
-        #     handleType(userCommand)
-
         pass
-        
+
+
+
 def runExecutable(userCommand):
     path_dirs = os.environ.get("PATH", "").split(os.pathsep)
     parts = userCommand.strip().split()
@@ -58,6 +48,9 @@ def runExecutable(userCommand):
             return
 
     sys.stdout.write(f"{command}: command not found\n")
+
+def handlePWD(userCommand): 
+    sys.stdout.write(f"{os.getcwd()}\n")
 
 
 def handleType(userCommand):
@@ -77,8 +70,7 @@ def handleType(userCommand):
                 break
         if not found:
             sys.stdout.write(f"{cmd}: not found\n")
-
-    
+ 
 def handleEcho(userCommand):
     output = userCommand.split(" ")[1:]
     sys.stdout.write(" ".join(output) + '\n')

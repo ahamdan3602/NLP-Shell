@@ -31,6 +31,24 @@ def main():
                 runExecutable(userCommand)
         pass
 
+def runExecutable(userCommand):
+    path_dirs = os.environ.get("PATH", "").split(os.pathsep)
+    parts = shlex.split(userCommand)
+
+    if not parts:
+        return  # Ignore empty command
+
+    command = parts[0]
+    args = parts  # includes program name and arguments
+
+    for directory in path_dirs:
+        full_path = os.path.join(directory, command)
+        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+            subprocess.run([command] + args[1:])
+            return
+
+    sys.stdout.write(f"{command}: command not found\n")
+
 
 def handleCD(userCommand):
     '''
@@ -49,23 +67,6 @@ def handleCD(userCommand):
     else:
         sys.stdout.write(f"{path}: No such file or directory \n")
 
-def runExecutable(userCommand):
-    path_dirs = os.environ.get("PATH", "").split(os.pathsep)
-    parts = userCommand.strip().split()
-
-    if not parts:
-        return  # Ignore empty command
-
-    command = parts[0]
-    args = parts  # includes program name and arguments
-
-    for directory in path_dirs:
-        full_path = os.path.join(directory, command)
-        if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-            subprocess.run([command] + args[1:])
-            return
-
-    sys.stdout.write(f"{command}: command not found\n")
 
 def handlePWD(userCommand): 
     sys.stdout.write(f"{os.getcwd()}\n")
@@ -90,8 +91,18 @@ def handleType(userCommand):
             sys.stdout.write(f"{cmd}: not found\n")
  
 def handleEcho(userCommand):
-    output = userCommand.split(" ")[1:]
-    sys.stdout.write(" ".join(output) + '\n')
+    try:
+        tokens = shlex.split(userCommand)
+
+        args = tokens[1:]
+
+        output = " ".join(args)
+
+        sys.stdout.write(f"{output}\n")
+
+    except ValueError as e:
+        sys.stderr.write(f"Error parsing command: {e}\n")
+
 
 def handleExit(userCommand):
     cmdStus = userCommand.split(" ")

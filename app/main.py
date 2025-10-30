@@ -25,11 +25,24 @@ def main():
                 handleType(userCommand)
             case "pwd":
                 handlePWD(userCommand)
+            case "cd":
+                handleCD(userCommand)
             case _:
                 runExecutable(userCommand)
         pass
 
 
+def handleCD(userCommand):
+    '''
+    Checks if the given path actually exists in OS.
+    If path exists then we update cwd accordingly
+    '''
+    path = userCommand.split(" ")[1]
+
+    if os.path.exists(path):
+        os.chdir(path)
+    else:
+        sys.stdout.write(f"{path}: No such file or directory \n")
 
 def runExecutable(userCommand):
     path_dirs = os.environ.get("PATH", "").split(os.pathsep)

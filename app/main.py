@@ -31,15 +31,16 @@ def main():
                 runExecutable(userCommand)
         pass
 
+
 def runExecutable(userCommand):
     path_dirs = os.environ.get("PATH", "").split(os.pathsep)
     parts = shlex.split(userCommand)
 
     if not parts:
-        return  # Ignore empty command
+        return  
 
     command = parts[0]
-    args = parts  # includes program name and arguments
+    args = parts  
 
     for directory in path_dirs:
         full_path = os.path.join(directory, command)
@@ -72,6 +73,27 @@ def handlePWD(userCommand):
     sys.stdout.write(f"{os.getcwd()}\n")
 
 
+def handleRedirect(userCommand):
+    cmds = userCommand.split(" ")
+    '''
+    ls /tmp/baz > /tmp/boo/baz.md
+    [ls, /tmp/baz, >, /tmp/foo/baz/md]
+    
+    '''
+    path_dir = cmds[1]
+    path_exc = cmmds[-1]
+    if not os.path.exists(path_dir) and os.path.exists(path_exc):
+        return
+
+    # if os.path.isdir(path_dir):
+    if '>' in cmds:
+        output = os.popen('ls /etc/services').read()
+        path_for_exc = path_exc.split("/")[:-1]
+        curr_dir = os.getcwd()
+        os.chdir("".join(path_for_exc))
+        subprocess.run([])
+        
+         
 def handleType(userCommand):
     cmd = userCommand.split(" ")[1] if len(userCommand.split(" ")) > 1 else ""
     if cmd in listOfCommands:

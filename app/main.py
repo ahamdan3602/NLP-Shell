@@ -39,7 +39,7 @@ def handleCD(userCommand):
     '''
     path = userCommand.split(" ")[1]
 
-    if os.path.exists(path):
+    if os.path.exists(path) and os.path.idir(path):
         os.chdir(path)
     else:
         sys.stdout.write(f"{path}: No such file or directory \n")

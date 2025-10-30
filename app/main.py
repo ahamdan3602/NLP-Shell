@@ -4,7 +4,7 @@ import subprocess
 import shlex
 
 
-listOfCommands = ["exit", "echo", "type", "pwd"]
+listOfCommands = ["exit", "echo", "type", "pwd", "cd"]
 
 def main():
     # TODO: Uncomment the code below to pass the first stage
@@ -39,8 +39,13 @@ def handleCD(userCommand):
     '''
     path = userCommand.split(" ")[1]
 
-    if os.path.exists(path) and os.path.idir(path):
+    if os.path.exists(path) and os.path.isdir(path):
         os.chdir(path)
+
+    elif "~" in path:
+        home_dir = os.environ.get("HOME", "")
+        os.chdir(home_dir)
+
     else:
         sys.stdout.write(f"{path}: No such file or directory \n")
 

@@ -13,8 +13,17 @@ def main():
     while True:
         sys.stdout.write("$ ")
         userCommand = input()
-        
+
+        args = userCommand.split()
+        if ">" in args or "1>" in args:
+            handleStdout(userCommand)
+            continue
+        elif "2>" in args:
+            handleStderr(userCommand)
+            continue
+
         command = userCommand.split(" ")[0]
+
 
         match (command):
             case "exit":
@@ -73,27 +82,92 @@ def handlePWD(userCommand):
     sys.stdout.write(f"{os.getcwd()}\n")
 
 
-def handleRedirect(userCommand):
-    cmds = userCommand.split(" ")
-    '''
-    ls /tmp/baz > /tmp/boo/baz.md
-    [ls, /tmp/baz, >, /tmp/foo/baz/md]
+def handleStderr(userCommand):
+    symbol = "2>"
+    parts = userCommand.split(symbol, 1)
+
+    if len(parts) < 2:
+        sys.stdout.write('Syntax error: no output file provided \n')
     
-    '''
-    path_dir = cmds[1]
-    path_exc = cmmds[-1]
-    if not os.path.exists(path_dir) and os.path.exists(path_exc):
+    cmd_part = parts[0].strip()
+    output_file = parts[1].strip()
+
+    if not output_file:
+        sys.stdout.write("Syntax error: missing output file name")
+    
+
+    cmd_tokens = cmd_part.split()
+
+    if not cmd_tokens:
+        sys.stdout.write("Syntax error: missing command before redirect")
+    
+    if cmd_tokens[0] == "echo":
+        handleEcho(cmd_part)
+        try:
+            with open(output_file, "w") as f:
+                f.write("")
+        except e:
+            sys.stdout.write("Error")
         return
 
-    # if os.path.isdir(path_dir):
-    if '>' in cmds:
-        output = os.popen('ls /etc/services').read()
-        path_for_exc = path_exc.split("/")[:-1]
-        curr_dir = os.getcwd()
-        os.chdir("".join(path_for_exc))
-        subprocess.run([])
-        
-         
+    
+    res = subprocess.run(cmd_tokens,  capture_output=True, text=True)
+
+    if res.stderr:
+        try:
+            with open(output_file, "a") as f:
+                f.write(res.stderr)
+        except FileNotFoundError:
+            sys.stdout.write(f"{cmd_tokens[0]}: command not found\n")
+
+
+
+
+def handleStdout(userCommand):
+    if "1>" in userCommand:
+        symbol = "1>"
+    else:
+        symbol = ">"
+
+    parts = userCommand.split(symbol, 1)
+
+    if len(parts) < 2:
+        sys.stdout.write("Syntax error: no output file provided \n")
+
+    cmd_part = parts[0].strip()
+    output_file = parts[1].strip()
+
+    if not output_file:
+        sys.stdout.write("Syntax error: missing output file name")
+        return
+    
+    cmd_tokens = cmd_part.split()
+
+    if not cmd_tokens:
+        sys.stdout.write('Syntax error: missing command before redirection\n')
+        return
+    
+    if cmd_tokens[0] == "echo":
+        output = " ".join(cmd_tokens[1:]).strip()
+
+        if (output.startswith("'") and output.endswith("'")) or (output.startswith('"') and output.endswith('"')):
+            output = output[1:-1]
+        with open(output_file, "w") as f:
+            f.write(output + "\n")
+        return
+
+    try:
+        with open(output_file, "a") as f:
+            res = subprocess.run(cmd_tokens, capture_output=True, text=True)
+            f.write(res.stdout)
+
+            if res.stderr:
+                sys.stderr.write(res.stderr)
+
+    except FileNotFoundError:
+        sys.stdout.write(f"{cmd_tokens[0]}: command not found\n")
+
+
 def handleType(userCommand):
     cmd = userCommand.split(" ")[1] if len(userCommand.split(" ")) > 1 else ""
     if cmd in listOfCommands:

@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shlex
+from smartshell import ShellImplementation
 
 
 listOfCommands = ["exit", "echo", "type", "pwd", "cd"]
@@ -36,6 +37,9 @@ def main():
                 handlePWD(userCommand)
             case "cd":
                 handleCD(userCommand)
+            case "smartshell":
+                enable = ShellImplementation()
+                
             case _:
                 runExecutable(userCommand)
         pass

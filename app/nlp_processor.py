@@ -136,6 +136,11 @@ def extract_intent(parsed_tokens: list[str], raw_input: str = "") -> str:
     if primary_token in _BUILTIN_INTENT_MAP:
         return _BUILTIN_INTENT_MAP[primary_token]
 
+    # Known CLI programs must be checked before NL pattern matching because
+    # several program names ("find", "make", "show") appear in NL trigger words.
+    if primary_token in _KNOWN_CLI_COMMANDS:
+        return INTENT_SYSTEM_EXECUTABLE
+
     raw_lower = raw_input.lower().strip()
     for nl_pattern in _NL_TRIGGER_PATTERNS:
         if re.search(nl_pattern, raw_lower):
@@ -199,6 +204,11 @@ def is_natural_language_query(raw_input: str) -> bool:
     This supplements extract_intent() for borderline inputs (e.g. a known CLI
     command name used in a sentence context).
     """
+    # A known CLI program can never be natural language regardless of surrounding words.
+    words = raw_input.split()
+    if words and words[0].lower() in _KNOWN_CLI_COMMANDS:
+        return False
+
     raw_lower = raw_input.lower().strip()
 
     for pattern in _NL_TRIGGER_PATTERNS:
